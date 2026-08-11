@@ -377,6 +377,7 @@
 
   // ======= SCROLL REVEAL =======
   document.querySelectorAll("main section > div, .how-step, .faq-item, .frame, .product-card, .obra-visual, .obra-info").forEach(function (el) {
+    if (el.matches(".product-grid, .exhibition-wall, .path-grid")) return;
     if (!el.classList.contains("reveal")) el.classList.add("reveal");
   });
   var revealTargets = document.querySelectorAll(".reveal");
