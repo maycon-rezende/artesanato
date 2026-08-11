@@ -1,6 +1,125 @@
 (function () {
   "use strict";
 
+  // ======= ABERTURA DA HOME =======
+  var siteIntro = document.getElementById("siteIntro");
+  var introEnter = document.getElementById("introEnter");
+  var introSkip = document.getElementById("introSkip");
+  function closeIntro() {
+    if (!siteIntro || siteIntro.classList.contains("is-leaving")) return;
+    siteIntro.classList.add("is-leaving");
+    document.body.classList.remove("intro-active");
+    document.body.classList.add("home-ready");
+    startMusic();
+    setMusicUI(true);
+    setTimeout(function () { siteIntro.hidden = true; }, 900);
+  }
+  if (siteIntro) {
+    document.body.classList.add("intro-active");
+    if (introEnter) introEnter.addEventListener("click", closeIntro);
+    if (introSkip) introSkip.addEventListener("click", closeIntro);
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !siteIntro.hidden) closeIntro();
+    });
+  }
+
+  // ======= PROFUNDIDADE ARTESANAL NO HERO =======
+  var hero = document.querySelector(".hero");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (hero && !reduceMotion && window.matchMedia("(pointer: fine)").matches) {
+    var parallaxItems = hero.querySelectorAll("[data-depth]");
+    var framePending = false;
+    var pointerX = 0;
+    var pointerY = 0;
+    function paintHeroMotion() {
+      hero.style.setProperty("--mouse-x", ((pointerX + 1) * 50) + "%");
+      hero.style.setProperty("--mouse-y", ((pointerY + 1) * 50) + "%");
+      parallaxItems.forEach(function (item) {
+        var depth = Number(item.dataset.depth) || 10;
+        item.style.setProperty("--shift-x", (pointerX * depth) + "px");
+        item.style.setProperty("--shift-y", (pointerY * depth) + "px");
+      });
+      framePending = false;
+    }
+    hero.addEventListener("pointermove", function (e) {
+      var rect = hero.getBoundingClientRect();
+      pointerX = ((e.clientX - rect.left) / rect.width - .5) * 2;
+      pointerY = ((e.clientY - rect.top) / rect.height - .5) * 2;
+      if (!framePending) { framePending = true; requestAnimationFrame(paintHeroMotion); }
+    });
+    hero.addEventListener("pointerleave", function () {
+      pointerX = 0; pointerY = 0;
+      if (!framePending) { framePending = true; requestAnimationFrame(paintHeroMotion); }
+    });
+  }
+
+  // ======= CURSOR-AGULHA NA HOME =======
+  var needleCursor = document.getElementById("needleCursor");
+  if (!needleCursor) {
+    needleCursor = document.createElement("div");
+    needleCursor.className = "needle-cursor";
+    needleCursor.id = "needleCursor";
+    needleCursor.setAttribute("aria-hidden", "true");
+    needleCursor.innerHTML = '<svg viewBox="0 0 72 72"><path class="needle-thread" d="M8 61 C18 45 24 64 37 50 C46 40 45 28 51 18"/><path class="needle-body" d="M50 21 L62 7"/><ellipse class="needle-eye" cx="63" cy="6" rx="3.8" ry="2.2" transform="rotate(-45 63 6)"/></svg>';
+    document.body.appendChild(needleCursor);
+  }
+  if (needleCursor && !reduceMotion && window.matchMedia("(pointer: fine)").matches) {
+    document.body.classList.add("has-needle-cursor");
+    var needleX = window.innerWidth / 2;
+    var needleY = window.innerHeight / 2;
+    var targetNeedleX = needleX;
+    var targetNeedleY = needleY;
+    var needleRunning = false;
+    function animateNeedle() {
+      needleX += (targetNeedleX - needleX) * .24;
+      needleY += (targetNeedleY - needleY) * .24;
+      needleCursor.style.transform = "translate3d(" + needleX + "px," + needleY + "px,0)";
+      if (Math.abs(targetNeedleX - needleX) > .1 || Math.abs(targetNeedleY - needleY) > .1) {
+        requestAnimationFrame(animateNeedle);
+      } else {
+        needleRunning = false;
+      }
+    }
+    document.addEventListener("pointermove", function (e) {
+      targetNeedleX = e.clientX;
+      targetNeedleY = e.clientY;
+      needleCursor.classList.add("is-visible");
+      if (!needleRunning) { needleRunning = true; requestAnimationFrame(animateNeedle); }
+    });
+    document.addEventListener("pointerover", function (e) {
+      needleCursor.classList.toggle("is-hovering", Boolean(e.target.closest("a, button, input, textarea, select, [role='button']")));
+    });
+    document.documentElement.addEventListener("mouseleave", function () {
+      needleCursor.classList.remove("is-visible");
+    });
+  }
+
+  // ======= NOME COSTURADO LETRA POR LETRA NA INTRO =======
+  var stitchedTitle = document.getElementById("introTitle");
+  if (stitchedTitle) {
+    var stitchIndex = 0;
+    function stitchTextNode(node, container) {
+      Array.prototype.forEach.call(node.childNodes, function (child) {
+        if (child.nodeType === 3) {
+          var fragment = document.createDocumentFragment();
+          Array.prototype.forEach.call(child.nodeValue, function (character) {
+            var letter = document.createElement("span");
+            letter.className = "stitched-letter" + (character === " " ? " stitched-space" : "");
+            letter.textContent = character === " " ? "\u00a0" : character;
+            letter.style.setProperty("--stitch-delay", (.55 + stitchIndex * .24) + "s");
+            fragment.appendChild(letter);
+            stitchIndex++;
+          });
+          container.replaceChild(fragment, child);
+        } else if (child.nodeType === 1) {
+          stitchTextNode(child, child);
+        }
+      });
+    }
+    stitchTextNode(stitchedTitle, stitchedTitle);
+    stitchedTitle.classList.add("is-being-stitched");
+  }
+
   // ======= CONFIG =======
   var WHATSAPP_NUMBER = "5515996653654"; // protótipo — trocar pelo número definitivo da Emily
 
@@ -80,15 +199,7 @@
         window.open(card.dataset.whats, "_blank", "noopener");
         return;
       }
-      // clique na foto -> WhatsApp também (mantém o comportamento original)
-      var photo = e.target.closest(".product-photo");
-      if (photo) {
-        e.preventDefault();
-        var card2 = e.target.closest(".product-card");
-        celebrateAt(e.clientX, e.clientY);
-        window.open(card2.dataset.whats, "_blank", "noopener");
-      }
-      // clique no título -> segue o link normal para a página da obra (sem preventDefault)
+      // foto e título seguem seus links para a página da obra.
     });
   }
 
@@ -219,13 +330,13 @@
   window.addEventListener("scroll", function () {
     var past = window.scrollY > 420;
     if (backToTop) backToTop.classList.toggle("is-visible", window.scrollY > 600);
-    if (musicToggleBtn) musicToggleBtn.classList.toggle("is-visible", past);
+    if (musicToggleBtn) musicToggleBtn.classList.toggle("is-visible", past || Boolean(document.querySelector("#homeMusic, #pageMusic")));
     if (favsWidgetEl) favsWidgetEl.classList.toggle("is-visible", past);
   }, { passive: true });
   (function () {
     var past = window.scrollY > 420;
     if (backToTop) backToTop.classList.toggle("is-visible", window.scrollY > 600);
-    if (musicToggleBtn) musicToggleBtn.classList.toggle("is-visible", past);
+    if (musicToggleBtn) musicToggleBtn.classList.toggle("is-visible", past || Boolean(document.querySelector("#homeMusic, #pageMusic")));
     if (favsWidgetEl) favsWidgetEl.classList.toggle("is-visible", past);
   })();
   if (backToTop) {
@@ -240,7 +351,34 @@
     footerYear.textContent = "© " + new Date().getFullYear() + " Emily Artes";
   }
 
+  // ======= MOSTRA EM LOOP CONTÍNUO =======
+  var exhibitionWall = document.querySelector(".exhibition .exhibition-wall");
+  if (exhibitionWall && exhibitionWall.children.length && !reduceMotion) {
+    var originalFrames = Array.prototype.slice.call(exhibitionWall.children);
+    var firstLoopGroup = document.createElement("div");
+    var secondLoopGroup = document.createElement("div");
+    firstLoopGroup.className = "exhibition-loop-group";
+    secondLoopGroup.className = "exhibition-loop-group";
+    secondLoopGroup.setAttribute("aria-hidden", "true");
+    originalFrames.forEach(function (frame) {
+      firstLoopGroup.appendChild(frame);
+      var clone = frame.cloneNode(true);
+      clone.classList.add("is-visible");
+      clone.setAttribute("tabindex", "-1");
+      secondLoopGroup.appendChild(clone);
+    });
+    var loopTrack = document.createElement("div");
+    loopTrack.className = "exhibition-loop-track";
+    loopTrack.appendChild(firstLoopGroup);
+    loopTrack.appendChild(secondLoopGroup);
+    exhibitionWall.appendChild(loopTrack);
+    exhibitionWall.classList.add("loop-gallery");
+  }
+
   // ======= SCROLL REVEAL =======
+  document.querySelectorAll("main section > div, .how-step, .faq-item, .frame, .product-card, .obra-visual, .obra-info").forEach(function (el) {
+    if (!el.classList.contains("reveal")) el.classList.add("reveal");
+  });
   var revealTargets = document.querySelectorAll(".reveal");
   if ("IntersectionObserver" in window) {
     var io = new IntersectionObserver(function (entries) {
@@ -295,30 +433,27 @@
     pluckNote(1046.5, t + 0.17, 0.32, 0.11);
   }
 
-  // ======= MÚSICA AMBIENTE (caixinha de música sintetizada) =======
-  var MB_NOTES = [523.25, 659.25, 783.99, 880.0, 783.99, 659.25, 587.33, 523.25];
-  var mbTimer = null;
-  var mbStep = 0;
+  // ======= MÚSICA AMBIENTE (somente arquivos escolhidos para cada página) =======
   var musicPlaying = false;
-  var MUSIC_KEY = "emily-music-on";
+  var homeMusic = document.getElementById("homeMusic");
+  var pageMusic = document.getElementById("pageMusic");
+  var siteMusic = homeMusic || pageMusic;
+  if (siteMusic) siteMusic.volume = .32;
 
-  function scheduleMusicStep() {
-    var ctx = getCtx();
-    if (!ctx) return;
-    var freq = MB_NOTES[mbStep % MB_NOTES.length];
-    pluckNote(freq, ctx.currentTime, 0.55, 0.08);
-    mbStep++;
-  }
   function startMusic() {
-    if (musicPlaying) return;
-    if (!getCtx()) return;
+    if (musicPlaying || !siteMusic) return;
+    var playRequest = siteMusic.play();
+    if (playRequest && typeof playRequest.catch === "function") {
+      playRequest.catch(function () {
+        musicPlaying = false;
+        setMusicUI(false);
+      });
+    }
     musicPlaying = true;
-    scheduleMusicStep();
-    mbTimer = setInterval(scheduleMusicStep, 480);
   }
   function stopMusic() {
     musicPlaying = false;
-    if (mbTimer) { clearInterval(mbTimer); mbTimer = null; }
+    if (siteMusic) siteMusic.pause();
   }
 
   var musicToggle = document.getElementById("musicToggle");
@@ -328,27 +463,14 @@
     musicToggle.setAttribute("aria-pressed", on ? "true" : "false");
     musicToggle.setAttribute("aria-label", on ? "Pausar música ambiente" : "Ligar música ambiente");
   }
-  if (musicToggle) {
-    var wantsMusic = localStorage.getItem(MUSIC_KEY) === "1";
-    setMusicUI(wantsMusic);
-    if (wantsMusic) {
-      var tryResume = function () {
-        startMusic();
-        setMusicUI(true);
-      };
-      window.addEventListener("pointerdown", tryResume, { once: true });
-    }
-    musicToggle.addEventListener("click", function () {
-      if (musicPlaying) {
-        stopMusic();
-        localStorage.setItem(MUSIC_KEY, "0");
-        setMusicUI(false);
-      } else {
-        startMusic();
-        localStorage.setItem(MUSIC_KEY, "1");
-        setMusicUI(true);
-      }
-    });
+  if (musicToggle && !siteMusic) musicToggle.hidden = true;
+  if (siteMusic) {
+    // Tenta tocar no carregamento. Se o navegador bloquear autoplay com som,
+    // a primeira interação da visitante libera a faixa automaticamente.
+    startMusic();
+    window.addEventListener("pointerdown", function () { startMusic(); }, { once:true });
+    siteMusic.addEventListener("play", function () { musicPlaying = true; setMusicUI(true); });
+    siteMusic.addEventListener("pause", function () { musicPlaying = false; setMusicUI(false); });
   }
 
   // ======= CONFETE (feedback ao clicar em "pedir no zap") =======

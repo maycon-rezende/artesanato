@@ -13,11 +13,13 @@
 </head>
 <body>
 
+<audio id="pageMusic" class="page-music" src="audio/themeatelie.mp3" preload="auto" autoplay loop></audio>
+
 <div class="thread-progress" aria-hidden="true"><span id="threadFill"></span></div>
 
 <header class="site-header" id="siteHeader">
   <div class="header-inner">
-    <a href="index.html" class="brand">
+    <a href="home.html" class="brand">
       <span class="brand-mark">&#10022;</span>
       <span class="brand-name">Emily<span class="brand-script">artes</span></span>
     </a>
@@ -54,18 +56,29 @@
 
 <div class="page-breadcrumb-bar">
   <div class="obra-breadcrumb">
-    <a href="index.html">Início</a>
+    <a href="home.html">Início</a>
     <span>/</span>
     <span class="crumb-current">Galeria</span>
   </div>
 </div>
 <main id="top">
 
-<section class="gallery">
+<section class="gallery gallery-exhibition">
   <div class="gallery-head">
     <span class="section-eyebrow">O que já saiu daqui</span>
     <h1 class="section-title">Galeria &amp; encomendas</h1>
     <p class="gallery-sub">Valores a partir de, sujeitos a ajuste conforme tamanho e personalização. Clique em qualquer peça para abrir o WhatsApp já com a mensagem pronta.</p>
+  </div>
+
+  <div class="craft-ribbon" aria-hidden="true">
+    <div class="craft-ribbon-track">
+      <div class="craft-ribbon-group">
+        <span>Desenho &amp; pintura</span><i>✦</i><span>Crochê &amp; amigurumi</span><i>✦</i><span>Escultura</span><i>✦</i><span>Chaveiros</span><i>✦</i>
+      </div>
+      <div class="craft-ribbon-group">
+        <span>Desenho &amp; pintura</span><i>✦</i><span>Crochê &amp; amigurumi</span><i>✦</i><span>Escultura</span><i>✦</i><span>Chaveiros</span><i>✦</i>
+      </div>
+    </div>
   </div>
 
   <div class="filters" id="filters" role="tablist" aria-label="Filtrar por categoria">
@@ -103,11 +116,6 @@
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
 </button>
 
-<button class="music-toggle" id="musicToggle" aria-label="Ligar música ambiente" aria-pressed="false">
-  <svg class="icon-note-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
-  <span class="music-bars" aria-hidden="true"><i></i><i></i><i></i></span>
-</button>
-
 <div class="favs-widget">
   <button class="favs-toggle" id="favsToggle" aria-label="Ver favoritos" aria-expanded="false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.6-10-9.3C.5 8 2.3 4.5 6 4c2.1-.3 3.9.7 6 3 2.1-2.3 3.9-3.3 6-3 3.7.5 5.5 4 4 7.7C19.5 16.4 12 21 12 21z"/></svg>
@@ -127,4 +135,3 @@
 <script src="script.js"></script>
 </body>
 </html>
-
