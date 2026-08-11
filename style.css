@@ -1007,6 +1007,14 @@ body{
 .gallery-exhibition .filter-btn:hover{ border-color:var(--rose); color:var(--rose); }
 .gallery-exhibition .filter-btn.is-active{ border-color:var(--paper); background:var(--paper); color:var(--ink); }
 .gallery-exhibition .product-card{ box-shadow:0 15px 36px -18px rgba(0,0,0,.7); }
+/* No mobile, duas camadas de reveal podiam devolver os cartões a opacity:0.
+   A grade permanece estável; os movimentos continuam apenas dentro das fotos. */
+.gallery-exhibition .product-card,
+.gallery-exhibition .product-card.reveal,
+.gallery-exhibition .product-card.is-visible{
+  opacity:1 !important;
+  transform:none !important;
+}
 .gallery-exhibition .product-card::after{
   content:"";
   position:absolute;
